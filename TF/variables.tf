@@ -1,6 +1,6 @@
 variable "profile" {
   type = string
-  default = "nr_dev"
+  default = "NRO1"
 }
 
 ############################# VPC ##########################
@@ -32,7 +32,7 @@ variable "public_subnets" {
 
 variable "nat" {
     type = bool
-    default = true
+    default = false
 }
 
 ############################# ALB ##########################

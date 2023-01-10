@@ -1,17 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source = "hashicorp/aws"
-      version = "4.48.0"
-    }
-  }
-}
-
-provider "aws" {
-     profile = var.profile
-}
-
-
 ############################# VPC ##########################
 
 module "vpc" {
@@ -28,7 +14,7 @@ module "vpc" {
   enable_nat_gateway = var.nat
 
   tags = {
-    project = "HS_project"
+    project = "PassMaker"
   }
 }
 
@@ -62,7 +48,7 @@ module "alb" {
   ]
 
   tags = {
-    project = "HS_project"
+    project = "PassMaker"
   }
 }
 
