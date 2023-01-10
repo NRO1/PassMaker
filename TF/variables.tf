@@ -1,0 +1,120 @@
+variable "profile" {
+  type = string
+  default = "nr_dev"
+}
+
+############################# VPC ##########################
+
+variable "vpcName" {
+    type = string
+    default = "NRO1_vpc"
+}
+
+variable "cidr" {
+    type = string
+    default = "10.0.0.0/16"
+}
+
+variable "azs" {
+    type = list
+    default = ["eu-central-1a", "eu-central-1b"]
+}
+
+variable "private_subnets" {
+    type = list
+    default = ["10.0.1.0/24", "10.0.3.0/24"]
+}
+
+variable "public_subnets" {
+    type = list
+    default = ["10.0.2.0/24", "10.0.4.0/24"]
+}
+
+variable "nat" {
+    type = bool
+    default = true
+}
+
+############################# ALB ##########################
+
+variable "albName" {
+    type = string
+    default = "NRO1-ALB"
+}
+
+variable "albType" {
+    type = string
+    default = "application"
+}
+
+variable "TG_namePrefix" {
+    type = string
+    default = "NRO1-"
+}
+
+variable "TG_BEprotocol" {
+    type = string
+    default = "HTTP"
+}
+
+variable "TG_BEport" {
+    type = number
+    default = 80
+}
+
+variable "TG_targetType" {
+    type = string
+    default = "instance"
+}
+
+variable "listenerPort" {
+    type = number
+    default = 80
+}
+
+variable "listenerProtocol" {
+    type = string
+    default = "HTTP"
+}
+
+variable "listenerGI" {
+    type = number
+    default = 0
+}
+
+############################# Autoscaling ##########################
+
+variable "asgName" {
+    type = string
+    default = "NRO1_ASG"
+}
+
+variable "asgMinSize" {
+    type = number
+    default = 1
+}
+
+variable "asgMaxSize" {
+    type = number
+    default = 3
+}
+
+variable "asgDesCapacity" {
+    type = number
+    default = 2
+}
+
+variable "asgHealth" {
+    type = string
+    default = "EC2"
+}
+
+variable "LT_name" {
+    type = string
+    default = "NRO1_LT"
+}
+
+variable "LT_instance_type" {
+    type = string
+    default = "t2.micro"
+}

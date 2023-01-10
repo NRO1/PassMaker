@@ -1,0 +1,21 @@
+.header {
+    color: #f2f2f2;
+    font-weight: 700;
+    font-size: 3rem;
+    margin: 0;
+  }
+
+.lowHeader {
+    color: #f2f2f2;
+    font-weight: 400;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.headerStruct {
+    margin-top: 3%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+  

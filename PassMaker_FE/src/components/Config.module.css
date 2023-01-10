@@ -1,0 +1,42 @@
+.configStruct {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.configHeader {
+    text-align: center;
+    color: #f2f2f2;
+    font-weight: 400;
+    font-size: 1.5rem;
+}
+
+.passContainer {
+    text-align: center;
+    border: 1px solid #f2f2f2;
+    border-radius: 8px;
+    width: 30%;
+    margin: 5% 35%;
+    font-size: 1.5rem;
+    color:#f2f2f2;
+
+}
+
+.config {
+    margin-top: 7%;
+    font-weight: 400;
+    font-size: 1.2rem;
+}
+
+.configAlign {
+    display: flex;
+    justify-content:space-evenly;
+    width: 40%;
+    margin: 5px 30%;
+    text-align: center;
+    color: #f2f2f2;
+}
+
+.inputWidth {
+    width: 10%;
+}
