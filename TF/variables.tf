@@ -96,12 +96,12 @@ variable "asgMinSize" {
 
 variable "asgMaxSize" {
     type = number
-    default = 3
+    default = 2
 }
 
 variable "asgDesCapacity" {
     type = number
-    default = 2
+    default = 1
 }
 
 variable "asgHealth" {
@@ -116,5 +116,11 @@ variable "LT_name" {
 
 variable "LT_instance_type" {
     type = string
-    default = "t2.micro"
+    default = "t2.small"
 }
+
+variable "LT_ami" {
+    type = string
+    default = "ami-0a261c0e5f51090b1"
+}
+
