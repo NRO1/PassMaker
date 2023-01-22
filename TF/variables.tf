@@ -3,6 +3,11 @@ variable "profile" {
   default = "NRO1"
 }
 
+variable "region" {
+  type = string
+  default = "eu-central-1"
+}
+
 ############################# VPC ##########################
 
 variable "vpcName" {
@@ -32,7 +37,7 @@ variable "public_subnets" {
 
 variable "nat" {
     type = bool
-    default = false
+    default = true
 }
 
 ############################# ALB ##########################
@@ -124,3 +129,34 @@ variable "LT_ami" {
     default = "ami-0a261c0e5f51090b1"
 }
 
+############################# ECS ##########################
+
+variable "ECS_app_name" {
+    type = string
+    default = "PassMaker"
+}
+
+#########  FE vars
+
+variable "FE_image" {
+  type= string
+  default = "docker.io/nrdevac1/passmaker-fe:latest"
+}   
+
+variable "FE_container_port" {
+  type = number
+  default = 80
+}
+
+
+#########  BE vars
+
+variable "BE_image" {
+  type= string
+  default = "docker.io/nrdevac1/passmaker-be:latest"
+}  
+
+variable "BE_container_port" {
+  type = number
+  default = 8000
+}

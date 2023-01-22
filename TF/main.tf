@@ -58,14 +58,12 @@ module "autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "6.7.0"
 
-  depends_on = [module.vpc]
   name = var.asgName
-
   min_size                  = var.asgMinSize
   max_size                  = var.asgMaxSize
   desired_capacity          = var.asgDesCapacity
   health_check_type         = var.asgHealth
-  vpc_zone_identifier       = var.private_subnets
+  vpc_zone_identifier       = module.vpc.private_subnets
 
   # Launch template
   launch_template_name       = var.LT_name
@@ -77,23 +75,7 @@ module "autoscaling" {
   }
 }
 
-
-
-
-
-
-
-
-
-
-/*resource "aws_iam_role" "ecsTaskExecutionRole" {
-  name               = "${var.app_name}-execution-task-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
-  tags = {
-    Name        = "${var.app_name}-iam-role"
-    Environment = var.app_environment
-  }
-}
+############################ ECS ##########################
 
 data "aws_iam_policy_document" "assume_role_policy" {
   statement {
@@ -111,38 +93,86 @@ resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
-
-
-data "template_file" "env_vars" {
-  template = file("env_vars.json")
+resource "aws_iam_role" "ecsTaskExecutionRole" {
+  name               = "${var.ECS_app_name}-execution-task-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+  tags = {
+     project = "NRO1_PassMaker"
+  }
 }
 
+resource "aws_cloudwatch_log_group" "log-group-FE" {
+  name = "${var.ECS_app_name}-FE-logs"
+
+  tags = {
+    project = "NRO1_PassMaker"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "log-group-BE" {
+  name = "${var.ECS_app_name}-BE-logs"
+
+  tags = {
+    project = "NRO1_PassMaker"
+  }
+}
+
+resource "aws_ecs_cluster" "aws-ecs-cluster" {
+  name = "${var.ECS_app_name}-cluster"
+  tags = {
+     project = "NRO1_PassMaker"
+  }
+}
+
+
 resource "aws_ecs_task_definition" "aws-ecs-task" {
-  family = "${var.app_name}-task"
+  family = "${var.ECS_app_name}-task"
 
   container_definitions = <<DEFINITION
   [
     {
-      "name": "${var.app_name}-${var.app_environment}-container",
-      "image": "${aws_ecr_repository.aws-ecr.repository_url}:latest",
+      "name": "${var.ECS_app_name}-FE-container",
+      "image": "${var.FE_image}",
       "entryPoint": [],
-      "environment": ${data.template_file.env_vars.rendered},
       "essential": true,
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "${aws_cloudwatch_log_group.log-group.id}",
-          "awslogs-region": "${var.aws_region}",
-          "awslogs-stream-prefix": "${var.app_name}-${var.app_environment}"
+          "awslogs-group": "${aws_cloudwatch_log_group.log-group-FE.id}",
+          "awslogs-region": "${var.region}",
+          "awslogs-stream-prefix": "${var.ECS_app_name}-FE"
         }
       },
       "portMappings": [
         {
-          "containerPort": 8080,
-          "hostPort": 8080
+          "containerPort": ${var.FE_container_port},
+          "hostPort": ${var.FE_container_port}
         }
       ],
-      "cpu": 256,
+      "cpu": 512,
+      "memory": 512,
+      "networkMode": "awsvpc"
+    },
+     {
+      "name": "${var.ECS_app_name}-BE-container",
+      "image": "${var.BE_image}",
+      "entryPoint": [],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${aws_cloudwatch_log_group.log-group-BE.id}",
+          "awslogs-region": "${var.region}",
+          "awslogs-stream-prefix": "${var.ECS_app_name}-BE"
+        }
+      },
+      "portMappings": [
+        {
+          "containerPort": ${var.BE_container_port},
+          "hostPort": ${var.BE_container_port}
+        }
+      ],
+      "cpu": 512,
       "memory": 512,
       "networkMode": "awsvpc"
     }
@@ -151,14 +181,13 @@ resource "aws_ecs_task_definition" "aws-ecs-task" {
 
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  memory                   = "512"
-  cpu                      = "256"
+  memory                   = "2048"
+  cpu                      = "1024"
   execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
   task_role_arn            = aws_iam_role.ecsTaskExecutionRole.arn
 
   tags = {
-    Name        = "${var.app_name}-ecs-td"
-    Environment = var.app_environment
+     project = "NRO1_PassMaker"
   }
 }
 
@@ -168,28 +197,24 @@ data "aws_ecs_task_definition" "main" {
 
 
 resource "aws_ecs_service" "aws-ecs-service" {
-  name                 = "${var.app_name}-${var.app_environment}-ecs-service"
-  cluster              = aws_ecs_cluster.aws-ecs-cluster.id
-  task_definition      = "${aws_ecs_task_definition.aws-ecs-task.family}:${max(aws_ecs_task_definition.aws-ecs-task.revision, data.aws_ecs_task_definition.main.revision)}"
+  name                 = "${var.ECS_app_name}-ecs-service"
+  cluster              =  aws_ecs_cluster.aws-ecs-cluster.arn
+  task_definition      = "${aws_ecs_task_definition.aws-ecs-task.family}"
   launch_type          = "FARGATE"
   scheduling_strategy  = "REPLICA"
   desired_count        = 1
   force_new_deployment = true
 
   network_configuration {
-    subnets          = aws_subnet.private.*.id
+    subnets          = module.vpc.private_subnet_arns
     assign_public_ip = false
-    security_groups = [
-      aws_security_group.service_security_group.id,
-      aws_security_group.load_balancer_security_group.id
-    ]
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
-    container_name   = "${var.app_name}-${var.app_environment}-container"
-    container_port   = 8080
+    target_group_arn = module.alb.target_group_arns[0]
+    container_name   = "${var.ECS_app_name}-container"
+    container_port   = 8000
   }
 
-  depends_on = [aws_lb_listener.listener]
-}*/
+ // depends_on = [aws_lb_listener.listener]
+}
