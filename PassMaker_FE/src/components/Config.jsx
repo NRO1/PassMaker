@@ -37,17 +37,25 @@ const Config = () => {
     // Fetch the password from the backend
     let passArray = [];
 
+    let config = {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "*/*"
+      }
+    }
+
     await axios
-      .get(`http://localhost:8000/${urlParam}`)
+      .get(`http://ec2-3-70-218-229.eu-central-1.compute.amazonaws.com:8000//${urlParam}`, config)
       .then(function (response) {
         for (const el of response.data.password) {
           passArray.push(el);
         }
       });
-
-    let flatPass = passArray.join("");
-    setGotRes(true);
-    setPass(flatPass);
+      
+      let flatPass = passArray.join("");
+      setGotRes(true);
+      setPass(flatPass);
+    ;
   };
 
   //Symbols input handler

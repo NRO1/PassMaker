@@ -1,9 +1,15 @@
+const AWS = require('aws-sdk')
 const nums = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 const syms = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "{", "}", "[", "]", ":", "?"]
 const uc = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "o", "P", "Q", "R", "S", "T", "U", "V",
           "W", "X", "Y", "Z"]
 const lc = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
           "w", "x", "y", "z"]
+
+// AWS configuration and functions
+AWS.config.update({region: 'eu-central-1'});
+const sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+
 
 // Create a password with numbers, Uppercase and Lowercase letters based on the length from the frontend
 const createNoSymPass = (req,res,next) => {
@@ -23,10 +29,27 @@ for (i = 1; i <= len; i++ ) {
             pass.push(uc[randUc])
         }
     }
-res.json({
-    password : pass,
-    Length : pass.length
-})
+
+    res.json({
+        password : pass,
+        Length : pass.length
+    })
+
+    let flatPass = pass.join("");
+
+    const params = {
+        DelaySeconds: 1,
+        MessageBody: flatPass.toString(),    
+         QueueUrl: process.env.QUE_URL
+    }
+      
+      sqs.sendMessage(params, function(err, data) {
+        if (err) {
+          console.log("Error", err);
+        } else {
+          console.log("Success", data.MessageId);
+        }
+    });
 }
 
 // Create a password with numbers, symbols Uppercase and Lowercase letters based on the length from the frontend
@@ -54,6 +77,22 @@ const createFullPass = (req,res,next) => {
         password : pass,
         Length : pass.length
     })
+
+    let flatPass = pass.join("");
+
+    const params = {
+        DelaySeconds: 1,
+        MessageBody: flatPass.toString(),    
+         QueueUrl: process.env.QUE_URL
+    }
+      
+      sqs.sendMessage(params, function(err, data) {
+        if (err) {
+          console.log("Error", err);
+        } else {
+          console.log("Success", data.MessageId);
+        }
+    });
 }
 
 // Create a password with numbers, symbols Uppercase and Lowercase letters based on the length from the frontend with no duplicates
@@ -85,6 +124,22 @@ const createFullPassND = (req,res,next) => {
         password : passArr,
         Length : passSet.size
     })
+
+    let flatPass = passArr.join("");
+
+    const params = {
+        DelaySeconds: 1,
+        MessageBody: flatPass.toString(),    
+         QueueUrl: process.env.QUE_URL
+    }
+      
+      sqs.sendMessage(params, function(err, data) {
+        if (err) {
+          console.log("Error", err);
+        } else {
+          console.log("Success", data.MessageId);
+        }
+    });
 }
 
 exports.createNoSymPass = createNoSymPass;
